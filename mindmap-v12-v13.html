@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Svensk OSINT – Veckobrev Mindmap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+  :root{
+    --bg:#0a0c10;--surface:#111318;--border:#252830;
+    --sv:#4a9eff;--no:#3de8b0;--eu:#f5a041;--ov:#f04e7c;
+    --tp:#e8eaf0;--ts:#7a82a0;--td:#404560;--panel-w:385px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--bg);color:var(--tp);font-family:'IBM Plex Sans',sans-serif;overflow:hidden;height:100%;width:100%;touch-action:none;}
+  body.drag{cursor:grabbing;}
+  #cw{position:fixed;top:0;left:0;width:100%;height:100%;cursor:grab;overflow:hidden;}
+  #sl{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;transform-origin:0 0;}
+  #ml{position:absolute;top:0;left:0;transform-origin:0 0;}
+
+  .cn{position:absolute;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#1c2540,#0b0e18);border:1.5px solid #4a9eff44;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 0 50px #4a9eff18;transform:translate(-50%,-50%);z-index:10;}
+  .cn .ct{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:3px;color:var(--sv);text-transform:uppercase;line-height:1.6;}
+  .cn .cs{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--td);letter-spacing:2px;margin-top:4px;}
+  .ring{position:absolute;border-radius:50%;border:1px solid #4a9eff1a;animation:rp 4s ease-out infinite;width:100%;height:100%;opacity:0;}
+  .ring:nth-child(2){animation-delay:1.3s;}.ring:nth-child(3){animation-delay:2.6s;}
+  @keyframes rp{0%{transform:scale(1);opacity:.3;}100%{transform:scale(1.7);opacity:0;}}
+
+  .catn{position:absolute;transform:translate(-50%,-50%);border-radius:9px;padding:8px 13px;display:flex;align-items:center;gap:6px;cursor:pointer;z-index:8;border:1.5px solid transparent;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;transition:transform .2s,filter .2s;white-space:nowrap;}
+  .catn:hover,.catn:active{filter:brightness(1.35);transform:translate(-50%,-50%) scale(1.06);}
+  .catn.act{filter:brightness(1.5);transform:translate(-50%,-50%) scale(1.08);}
+  .cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .csV{background:#4a9eff11;border-color:var(--sv);color:var(--sv);box-shadow:0 0 14px #4a9eff18;}
+  .csN{background:#3de8b011;border-color:var(--no);color:var(--no);box-shadow:0 0 14px #3de8b018;}
+  .csE{background:#f5a04111;border-color:var(--eu);color:var(--eu);box-shadow:0 0 14px #f5a04118;}
+  .csO{background:#f04e7c11;border-color:var(--ov);color:var(--ov);box-shadow:0 0 14px #f04e7c18;}
+
+  .subn{position:absolute;transform:translate(-50%,-50%);background:#13151e;border:1px solid #252830;border-radius:6px;padding:6px 10px;font-size:8.5px;font-weight:500;color:var(--ts);max-width:140px;text-align:center;line-height:1.3;transition:all .18s;cursor:pointer;z-index:7;}
+  .subn:hover,.subn:active,.subn.act{background:#1a1d28;color:var(--tp);z-index:20;transform:translate(-50%,-50%) scale(1.05);}
+  .sbadge{position:absolute;top:-6px;right:-4px;border-radius:8px;padding:1px 5px;font-family:'IBM Plex Mono',monospace;font-size:7px;font-weight:700;color:#0a0c10;pointer-events:none;line-height:1.6;}
+  .ssV:hover,.ssV.act{border-color:#4a9eff55;}.ssN:hover,.ssN.act{border-color:#3de8b055;}
+  .ssE:hover,.ssE.act{border-color:#f5a04155;}.ssO:hover,.ssO.act{border-color:#f04e7c55;}
+
+  #panel{position:fixed;right:0;top:0;width:var(--panel-w);height:100%;background:#0e1016;border-left:1px solid #1e2130;z-index:300;transform:translateX(102%);transition:transform .32s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;}
+  #panel.open{transform:translateX(0);}
+  .ph{padding:18px 18px 12px;border-bottom:1px solid #1e2130;flex-shrink:0;}
+  .ph-r{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:3px;text-transform:uppercase;margin-bottom:3px;}
+  .ph-t{font-size:13px;font-weight:600;line-height:1.3;padding-right:32px;}
+  .ph-c{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--td);margin-top:3px;letter-spacing:1px;}
+  .phx{position:absolute;top:14px;right:14px;background:none;border:1px solid #252830;color:var(--ts);cursor:pointer;width:30px;height:30px;border-radius:5px;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .phx:hover{border-color:#4a5068;color:var(--tp);}
+  .alist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px;scrollbar-width:thin;scrollbar-color:#1e2130 transparent;}
+  .ai{display:block;padding:10px 12px;margin-bottom:5px;border:1px solid #1e2130;border-radius:7px;text-decoration:none;background:#0a0c10;transition:all .15s;}
+  .ai:hover{border-color:#353850;background:#13151e;}
+  .ait{font-size:11px;font-weight:500;color:var(--tp);line-height:1.45;margin-bottom:4px;}
+  .aim{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--td);display:flex;align-items:center;gap:5px;}
+
+  #topbar{position:fixed;top:0;left:0;right:0;padding:10px 16px;background:linear-gradient(to bottom,#0a0c10 60%,transparent);z-index:200;pointer-events:none;display:flex;align-items:center;gap:12px;}
+  .tbl{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:4px;color:#4a5578;text-transform:uppercase;}
+  .tbs{width:1px;height:12px;background:#252830;}
+  .tbd{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--td);letter-spacing:2px;}
+
+  #legend{position:fixed;top:44px;left:14px;z-index:200;display:flex;flex-direction:column;gap:4px;}
+  .leg{display:flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--td);letter-spacing:1px;cursor:pointer;padding:5px 9px;border-radius:4px;transition:background .15s;white-space:nowrap;background:#0a0c10cc;border:1px solid #1a1d25;}
+  .leg:hover{background:#13151e;color:var(--ts);}
+  .ldot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+  /* VECKOVÄLJARE */
+  #wk-selector{position:fixed;top:8px;right:14px;z-index:250;display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+  #wk-header{display:flex;align-items:center;gap:9px;background:#111827;border:1px solid #4a9eff55;border-radius:7px;padding:7px 13px;cursor:pointer;user-select:none;box-shadow:0 0 18px #4a9eff18;transition:border-color .2s,box-shadow .2s;}
+  #wk-header:hover{border-color:#4a9effaa;box-shadow:0 0 24px #4a9eff28;}
+  .wk-label{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:3px;color:#7a9acc;text-transform:uppercase;}
+  #wk-current{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:#e8eaf0;letter-spacing:2px;}
+  .wk-chevron{font-size:10px;color:#4a9eff;transition:transform .2s;}
+  #wk-selector.open .wk-chevron{transform:rotate(180deg);}
+  #wk-list{display:none;flex-direction:column;gap:3px;background:#0e1016;border:1px solid #1e2130;border-radius:8px;padding:8px;min-width:190px;box-shadow:0 8px 32px #00000088;}
+  #wk-selector.open #wk-list{display:flex;}
+  .wk-year-label{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:3px;color:var(--td);text-transform:uppercase;padding:4px 6px 2px;border-bottom:1px solid #1a1d25;margin-bottom:2px;}
+  .wk-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:5px;cursor:pointer;border:1px solid transparent;transition:all .15s;}
+  .wk-item:hover{background:#13151e;border-color:#252830;}
+  .wk-item.active{background:#4a9eff0d;border-color:#4a9eff33;}
+  .wk-num{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:var(--ts);min-width:28px;}
+  .wk-item.active .wk-num{color:var(--sv);}
+  .wk-date{font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--td);letter-spacing:1px;flex:1;}
+  .wk-dots{display:flex;gap:3px;align-items:center;}
+  .wk-dot{width:5px;height:5px;border-radius:50%;opacity:.2;}
+  .wk-dot.has{opacity:1;}
+
+  #zc{position:fixed;bottom:18px;right:14px;display:flex;flex-direction:column;gap:4px;z-index:200;}
+  .zb{background:#111318;border:1px solid #252830;color:var(--ts);width:34px;height:34px;border-radius:5px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .zb:hover{border-color:#4a5068;color:var(--tp);}
+  #hud{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:200;}
+  .hp{background:#111318cc;border:1px solid #1e2130;border-radius:5px;padding:4px 9px;font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--td);letter-spacing:1px;white-space:nowrap;}
+  ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:#252830;border-radius:2px;}
+
+  @media(max-width:600px){
+    :root{--panel-w:100vw;}
+    #panel{width:100vw;border-left:none;}
+    #wk-list{min-width:160px;}
+    #hud .hp:first-child{display:none;}
+  }
+</style>
+</head>
+<body>
+<div id="topbar">
+  <span class="tbl">Svensk OSINT</span>
+  <div class="tbs"></div>
+  <span class="tbd" id="topbar-week"></span>
+</div>
+<div id="legend">
+  <div class="leg" onclick="fcat('sv')"><div class="ldot" style="background:var(--sv)"></div>Sverige</div>
+  <div class="leg" onclick="fcat('no')"><div class="ldot" style="background:var(--no)"></div>Norden</div>
+  <div class="leg" onclick="fcat('eu')"><div class="ldot" style="background:var(--eu)"></div>Europa</div>
+  <div class="leg" onclick="fcat('ov')"><div class="ldot" style="background:var(--ov)"></div>Övriga</div>
+  <div class="leg" onclick="fcat(null)" style="margin-top:2px"><div class="ldot" style="background:var(--border)"></div>Visa alla</div>
+</div>
+<div id="wk-selector">
+  <div id="wk-header" onclick="toggleWkSelector()">
+    <span class="wk-label">Vecka</span>
+    <span id="wk-current">V.13</span>
+    <span class="wk-chevron">▾</span>
+  </div>
+  <div id="wk-list"></div>
+</div>
+<div id="cw">
+  <svg id="sl" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></svg>
+  <div id="ml" style="position:absolute;top:0;left:0;"></div>
+</div>
+<div id="panel">
+  <button class="phx" onclick="closeP()">✕</button>
+  <div class="ph"><div class="ph-r" id="pr"></div><div class="ph-t" id="pt"></div><div class="ph-c" id="pc"></div></div>
+  <div class="alist" id="pl"></div>
+</div>
+<div id="zc">
+  <button class="zb" onclick="zm(1.22)">+</button>
+  <button class="zb" onclick="rv()">⌂</button>
+  <button class="zb" onclick="zm(1/1.22)">−</button>
+</div>
+<div id="hud">
+  <div class="hp">DRAG · PANORERA</div>
+  <div class="hp">NYP/SCROLL · ZOOMA</div>
+  <div class="hp">TRYCK · ARTIKLAR</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// DATA
+// Kategorivinklar: sv=215° no=315° eu=42° ov=128°
+// Subnoder positioneras automatiskt av layoutmotorn – inga manuella vinklar behövs
+// ════════════════════════════════════════════════════════════════
+const WEEKS=[
+{w:12,year:2026,date:'Mar 2026',cats:[
+  {id:'sv',l:'Sverige',cs:'csV',color:'#4a9eff',a:215,subs:[
+    {id:'sv1',l:'Säkerhetspolitik & Hotbild',arts:[
+      {t:'Säpo lägesbild 2025–2026: Ryssland, Kina, Iran, terrorhot mot Sverige',u:'https://www.linkedin.com/posts/svensk-osint_l%C3%A4gesbild-2025-2026-s%C3%A4kerhetspolisen-activity-7439992551584972800-teMz'},
+      {t:'Eldfesten inställd i Stockholm och Göteborg – förhöjd hotbild mot exiliranier',u:'https://www.linkedin.com/posts/svensk-osint_eldfesten-activity-7439667501313032193-V-Ed'},
+      {t:'Iran avrättar Kourosh Keyvani (sv-iransk medborgare) för påstått Mossadspionage',u:'https://www.linkedin.com/posts/svensk-osint_iran-statement-by-the-high-representative-activity-7441430351878688768-LiA'},
+    ]},
+    {id:'sv2',l:'Organiserad brottslighet',arts:[
+      {t:'Historiskt granatbeslag Alingsås/Vårgårda – CaaS-mönster och ung kriminell miljö',u:'https://www.linkedin.com/posts/svensk-osint_beslaget-av-granater-kan-vara-st%C3%B6rsta-i-sverige-activity-7439381682681626624-YuEJ'},
+      {t:'Olaga hot – fårhuvud med meddelande på restaurangdörr i Stockholm',u:'https://www.linkedin.com/posts/svensk-osint_18-mars-0343-olaga-hot-stockholm-polismyndigheten-activity-7440030891910799360-8IPt'},
+      {t:'Kryptorån Tobo – fyra åtalas, 2,5 mkr stulet under hot och misshandel',u:'https://www.linkedin.com/posts/svensk-osint_fyra-m%C3%A4n-%C3%A5talas-f%C3%B6r-brutalt-kryptor%C3%A5n-activity-7439029451373424640-lgom'},
+      {t:'Botoxbedrägerihärvan – 25 mkr, apotek stängs, tusen personnummer utnyttjats',u:'https://www.linkedin.com/posts/svensk-osint_misst%C3%A4nks-f%C3%B6r-miljonbedr%C3%A4gerier-apotek-activity-7440356911734067200-5sF9'},
+      {t:'Polismetod mot sexköpare via digitala spår – hundratals domar i Stockholm',u:'https://www.linkedin.com/posts/svensk-osint_s%C3%A5-reagerar-sexk%C3%B6parna-n%C3%A4r-polisen-knackar-activity-7439234094384975872-AL7C'},
+      {t:'100 telefonnummer utreds efter polisinsats mot sexköp i Göteborg',u:'https://www.linkedin.com/posts/svensk-osint_100-telefonnummer-utreds-efter-polisinsats-activity-7439560709228810240-5qPc'},
+      {t:'Fem svenskar i Europols Operation Alice – darknet, CSAM och cyberbrottstjänster',u:'https://www.linkedin.com/posts/svensk-osint_svenskar-i-stort-europol-tillslag-activity-7441048631626956801-eS5E'},
+      {t:'BMW-rattstölder – stöldvåg i Örebro och Västerås',u:'https://www.linkedin.com/posts/svensk-osint_20-mars-1422-%C3%B6vrigt-%C3%B6rebro-l%C3%A4n-polismyndigheten-activity-7441392314507452416-7ZfU'},
+    ]},
+    {id:'sv3',l:'Infrastruktur & Transport',arts:[
+      {t:'Hamnkontroll Oxelösund och Norrköping – underrättelsevärde om godsflöden',u:'https://www.linkedin.com/posts/svensk-osint_extra-fokus-p%C3%A5-hamnarna-i-oxel%C3%B6sund-och-norrk%C3%B6ping-activity-7439560765063434241-zDTU'},
+      {t:'Man frias för drönarflygning nära Landvetter – tillämpningsproblem i lagstiftning',u:'https://www.linkedin.com/feed/update/urn:li:activity:7439680903158611969'},
+      {t:'Klimataktivisten Tina Kronberg döms till fängelse efter intrång på Malmö Airport',u:'https://www.linkedin.com/posts/svensk-osint_f%C3%A4ngelse-f%C3%B6r-klimataktivist-activity-7440447152515977216-LRnA'},
+      {t:'Västtrafik stoppar Islamic Relief som annonsör efter Sidas beslut',u:'https://www.linkedin.com/posts/svensk-osint_v%C3%A4sttrafik-stoppar-annons%C3%B6r-efter-kritik-activity-7441396111635955712-oz6m'},
+    ]},
+    {id:'sv4',l:'Lagstiftning',arts:[
+      {t:'Riksdagen inför säkerhetsförvaring – ny påföljd från 15 april 2026',u:'https://www.linkedin.com/posts/svensk-osint_s%C3%A4kerhetsf%C3%B6rvaring-inf%C3%B6rs-som-ny-p%C3%A5f%C3%B6ljd-activity-7440132640281763840-Nwcv'},
+    ]},
+    {id:'sv5',l:'Politik & Övrigt',arts:[
+      {t:'Katja Nyberg formellt partilös – uppdrag i justitieutskott och EU-nämnd upphör',u:'https://www.linkedin.com/posts/svensk-osint_nu-%C3%A4r-katja-nyberg-formellt-politisk-vilde-activity-7440887173035356161-EnJu'},
+      {t:'Göteborgs stad – 1,65 mkr till judiskt kunskapscenter vid synagogan',u:'https://www.linkedin.com/posts/svensk-osint_judiskt-kunskapscenter-i-g%C3%B6teborg-g%C3%B6teborgs-activity-7439633626322976769-ieju'},
+      {t:'Eurail-dataintrång – svenska resenärers passnummer säljs på darknet via Telegram',u:'https://www.linkedin.com/posts/svensk-osint_svenskar-t%C3%A5gluffares-passnummer-s%C3%A4ljs-efter-activity-7440723316283346945-IsK-'},
+    ]},
+    {id:'sv6',l:'Analytiska reflektioner',arts:[
+      {t:'The Disjunction Effect – varför säkerhetsorganisationer tappar handlingskraft',u:'https://www.linkedin.com/feed/update/urn:li:activity:7440386167340036096'},
+      {t:'Legacy Thinking – föråldrade hotbilder och behovet av aktiv omvärldsbevakning',u:'https://www.linkedin.com/posts/svensk-osint_legacy-thinking-inneb%C3%A4r-att-organisationer-activity-7439945510746017792--Fhl'},
+    ]},
+  ]},
+  {id:'no',l:'Norden',cs:'csN',color:'#3de8b0',a:315,subs:[
+    {id:'no1',l:'Transport & Beredskap',arts:[
+      {t:'Joint Nordic Strategy for Transport System Preparedness – publicerad 24 feb 2026',u:'https://www.linkedin.com/posts/svensk-osint_joint-nordic-strategy-for-transport-system-activity-7439042456538660864-BKS8'},
+    ]},
+    {id:'no2',l:'Östersjösäkerhet',arts:[
+      {t:'(Un)safe Waters – Rysslands skuggflotta, sabotage av elva undervattenskablar sedan okt 2023',u:'https://www.linkedin.com/posts/svensk-osint_unsafe-waters-activity-7440125075296624640-DxW-'},
+    ]},
+    {id:'no3',l:'Kinesiskt inflytande',arts:[
+      {t:'Kinas påverkan i Norden/Baltikum – Shadow Wolf Warrior, Danmark och Litauen',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441037558945304576'},
+      {t:'Finland: kinesiskt flyktingspionage mot uigurer – Skyddspolisen varnar',u:'https://www.linkedin.com/posts/svensk-osint_wednesdays-papers-refugee-espionage-finnish-activity-7441425516076777473-M9aJ'},
+    ]},
+    {id:'no4',l:'Demokrati & Samhälle',arts:[
+      {t:'V-Dem Democracy Report 2026 – 74 % av världen lever i autokrati, USA ej längre liberal demokrati',u:'https://www.linkedin.com/posts/svensk-osint_democracy-report-2026-v-dem-activity-7440165523134398465-sq_C'},
+      {t:'Norges narkotikaproblem – höga överdosdödstal, debatt om avkriminalisering',u:'https://www.linkedin.com/posts/svensk-osint_norway-and-its-drug-problem-activity-7440740413818241025-xrNt'},
+    ]},
+  ]},
+  {id:'eu',l:'Europa',cs:'csE',color:'#f5a041',a:42,subs:[
+    {id:'eu1',l:'Hybridhot & Spionage',arts:[
+      {t:'Wien – ryska antennanläggningar på fastigheter, avlyssning av NATO/EU/IO',u:'https://www.linkedin.com/posts/svensk-osint_from-viennas-rooftops-the-kremlin-is-listening-activity-7439919693483651073-8EW2'},
+      {t:'Euro Eyes – tyskt förslag om europeiskt underrättelsenätverk, 321 sabotagefall i Tyskland',u:'https://www.linkedin.com/posts/svensk-osint_german-lawmakers-float-euro-eyes-spy-network-activity-7439969450654625792-cnOq'},
+      {t:'FOI: Rysslands informationspåverkan i Afrika – testmiljö för europeiska metoder',u:'https://www.linkedin.com/posts/svensk-osint_rysslands-informationsp%C3%A5verkan-i-afrika-activity-7439947871572914176-LQ4B'},
+      {t:'Center 795 / enhet 75127 – rysk specialenhet avslöjad via Google Translate-misstag',u:'https://www.linkedin.com/posts/svensk-osint_lost-in-translation-how-russias-new-elite-activity-7439203417694040064-nXf9'},
+      {t:'Slovenien – Black Cube besökte oppositionspartiet SDS inför val, utländsk påverkan',u:'https://www.linkedin.com/posts/svensk-osint_new-findings-on-foreign-interference-in-slovenia-activity-7441410566587539456-YHWq'},
+      {t:'Schweiz – kraftigt ökande cyberhot och spionage mot forskning och kritisk infrastruktur',u:'https://www.linkedin.com/posts/svensk-osint_sharp-rise-in-cyberattacks-and-espionage-activity-7441428642855026688-eg9b'},
+      {t:'UK: rättegång mot två åtalade för spioneri åt Hongkong/Kina via HKETO London',u:'https://www.linkedin.com/posts/svensk-osint_retired-police-officer-denies-hes-a-chinese-activity-7441437552840167424-SAvZ'},
+    ]},
+    {id:'eu2',l:'Iranskt hot i Europa',arts:[
+      {t:'Faslane (HM Naval Base Clyde) – misstänkt iransk medborgare gripen vid brittisk kärnvapenbas',u:'https://www.linkedin.com/posts/svensk-osint_man-and-woman-arrested-after-trying-to-enter-activity-7440807810893897728-tON'},
+      {t:'Rotterdam-synagogan – explosion av Tilburg-tonåringar, iransk koppling utreds',u:'https://www.linkedin.com/posts/svensk-osint_netherlands-probing-if-rotterdam-synagogue-activity-7439759622665748480-T-30'},
+      {t:'Femte gripen för Rotterdamattentatet – åklagare bedömer terroristiskt uppsåt',u:'https://www.linkedin.com/posts/svensk-osint_dutch-police-apprehend-fifth-suspect-for-activity-7441472458576011264-Gmoz'},
+      {t:'London – två åtalade under National Security Act för Iran-kopplad underrättelseverksamhet',u:'https://www.linkedin.com/posts/svensk-osint_two-men-charged-with-national-security-act-activity-7440274311292035072--iui'},
+      {t:'Nederlänska säkerhetsmyndigheter: främmande makter rekryterar vanliga medborgare online',u:'https://www.linkedin.com/posts/svensk-osint_foreign-governments-are-turning-to-ordinary-activity-7441427033030696960-zCOU'},
+    ]},
+    {id:'eu3',l:'Cyber & EU-sanktioner',arts:[
+      {t:'EU cybersanktioner – Emennet Pasargad kopplad till intrång mot svensk SMS-tjänst 2023',u:'https://www.linkedin.com/posts/svensk-osint_cyber-attacks-against-the-eu-and-its-member-activity-7441423563162697728-9nMo'},
+      {t:'FBI/CISA: ryskt nätfiske mot Signal och WhatsApp – f.d. BND-vicechef drabbad',u:'https://www.linkedin.com/posts/svensk-osint_former-germanys-foreign-intelligence-vp-activity-7441407495304126465-znoO'},
+    ]},
+    {id:'eu4',l:'Ukraina – agenter & psyops',arts:[
+      {t:'SBU gripper FSB-agent i Odessa som styrt robotanfall mot luftförsvar',u:'https://www.linkedin.com/posts/svensk-osint_sbu-detains-border-guard-in-odesa-on-suspicion-activity-7441421106101665792-pdbe'},
+      {t:'Dubbelagent i ukrainska drönarstyrkor – arbetat för FSB och belarusisk underrättelsetjänst',u:'https://www.linkedin.com/posts/svensk-osint_sbu-detains-double-agent-of-russia-and-belarus-activity-7441440902276964352-Pta0'},
+      {t:'Informatör vid värmekraftverk i Charkiv gripen – förberedde anfall',u:'https://www.linkedin.com/posts/svensk-osint_%D0%B3%D0%BE%D1%82%D1%83%D0%B2%D0%B0%D0%B2-%D1%83%D0%B4%D0%B0%D1%80-%D0%BF%D0%BE-%D0%BE%D0%B4%D0%BD%D1%96%D0%B9-%D0%B7-%D0%BD%D0%B0%D0%B9%D0%B1%D1%96%D0%BB%D1%8C%D1%88%D0%B8%D1%85-%D1%82%D0%B5%D1%81-%D1%8F%D0%BA-activity-7441433188318523392-o--v'},
+      {t:'FSB-agent gripen i Charkiv – rekryterade unga via Telegram för mordbränder',u:'https://www.linkedin.com/posts/svensk-osint_russian-agent-detained-in-kharkiv-for-plotting-activity-7441446644996321280-z8gB'},
+      {t:'SBU förhindrar terrorattack i Dnipro – rekryterade via Telegram och dejtingsajter',u:'https://www.linkedin.com/posts/svensk-osint_sbu-thwarts-planned-terrorist-attack-in-central-activity-7441434953319477248-g24E'},
+      {t:'Ryskt psykologiskt angrepp mot ungersk minoritet i Zakarpattia inför ungerskt val',u:'https://www.linkedin.com/posts/svensk-osint_russias-special-operation-against-hungarians-activity-7441438818303639552-U-fS'},
+    ]},
+  ]},
+  {id:'ov',l:'Övriga världen',cs:'csO',color:'#f04e7c',a:128,subs:[
+    {id:'ov1',l:'Iran & Hormuz',arts:[
+      {t:'Hormuzsundskrisen – USA-Iran eskalation och global energiexponering',u:'https://www.linkedin.com/posts/svensk-osint_donald-trumps-ultimatum-%C3%B6ppna-hormuz-inom-activity-7441770391716421632-G3-N'},
+      {t:'Trump: NATO-allierade avböjer militärt stöd vid Hormuz – "very foolish mistake"',u:'https://www.linkedin.com/posts/svensk-osint_donald-trump-har-publicerat-ett-inl%C3%A4gg-p%C3%A5-activity-7439745055998832640-34DZ'},
+      {t:'US allies rebuff Trump – Frankrike, Tyskland, Polen, Spanien nekar Hormuz-insats',u:'https://www.linkedin.com/posts/svensk-osint_us-allies-rebuff-trumps-request-for-support-activity-7439668329922838528-eIQX'},
+      {t:'Trump signalerar nedtrappning mot Iran – överlåta ansvar till regionala aktörer',u:'https://www.linkedin.com/posts/svensk-osint_trump-signalerar-nedtrappning-mot-iran-activity-7441115600686465024-2xj1'},
+    ]},
+    {id:'ov2',l:'Ryssland & GUS',arts:[
+      {t:'Rysslands informationspåverkan i Afrika – testmiljö för europeiska metoder',u:'https://www.linkedin.com/posts/svensk-osint_rysslands-informationsp%C3%A5verkan-i-afrika-activity-7439947871572914176-LQ4B'},
+      {t:'Cenzornet – ukrainska och globala nyhetsuppdateringar',u:'https://www.linkedin.com/posts/svensk-osint_%D1%86%D0%B5%D0%BD%D0%B7%D0%BE%D1%80%D0%BD%D0%B5%D1%82-%D0%BE%D1%81%D1%82%D0%B0%D0%BD%D0%BD%D1%96-%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B8-%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D0%B8-%D1%82%D0%B0-%D1%81%D0%B2%D1%96%D1%82%D1%83-activity-7441445402249371648-3kSj'},
+    ]},
+    {id:'ov3',l:'USA – politik & underrättelse',arts:[
+      {t:'Joe Kent avgår som antiterrorchefen – Iran inget omedelbart hot',u:'https://www.linkedin.com/posts/svensk-osint_no-imminent-threat-us-counterterrorism-activity-7439676876958224384-dvDy'},
+      {t:'Tulsi Gabbard inför senaten: Irans statsskick intakt men försvagat',u:'https://www.linkedin.com/posts/svensk-osint_us-intelligence-chief-tulsi-gabbard-says-activity-7440296806468620288-Cyau'},
+      {t:'USA:s underrättelsegemenskap – hotbedömning 2026',u:'https://www.linkedin.com/posts/svensk-osint_us-intelligence-community-manual-threat-activity-7441417525311193088-Gvpc'},
+      {t:'Tucker Carlson i Vita huset utan formell roll, iranska kontakter under 2025',u:'https://www.linkedin.com/posts/svensk-osint_tucker-carlson-expresses-fear-that-he-may-activity-7439588244574416896-Eg2O'},
+      {t:'Trump skjuter upp statsbesök i Kina med en månad pga. Irankriget',u:'https://www.linkedin.com/posts/svensk-osint_any-trump-xi-rescheduling-would-be-over-logistics-activity-7439561778319183872-wZYO'},
+      {t:'Temple Israel Michigan + ODU-ROTC-skjutning Virginia – ensamagerande radikalisering',u:'https://www.linkedin.com/posts/svensk-osint_sleeper-cells-and-lone-attackers-security-activity-7439212804395438080-KawN'},
+      {t:'Irankriget sätter USA i höjdberedskap – hotbild mot hemlandet',u:'https://www.linkedin.com/posts/svensk-osint_iran-war-puts-many-in-us-on-high-alert-but-activity-7439211750945726464-86od'},
+      {t:'Åtta dömda för terrorbrott mot immigrationsförvaret i Texas – antifa-koppling',u:'https://www.linkedin.com/posts/svensk-osint_eight-convicted-of-terrorism-related-charges-activity-7439328852855918592-NN5O'},
+      {t:'Bank of America förlikas i Epstein-kopplad talan om exploatering och människohandel',u:'https://www.linkedin.com/posts/svensk-osint_bank-of-america-settles-epstein-accusers-activity-7439560011946573824-MRB-'},
+    ]},
+    {id:'ov4',l:'Global cyber & brottslighet',arts:[
+      {t:'Europol sinkholer 45 000 IP-adresser – botnät neutraliserat',u:'https://www.linkedin.com/posts/svensk-osint_gigantiskt-botn%C3%A4t-har-slagits-ut-av-europol-activity-7439212295999823872-Wpr9'},
+      {t:'GlassWorm – 400+ kodarkiv infekterade via osynliga Unicode-tecken och Solana-blockchain',u:'https://www.linkedin.com/posts/svensk-osint_glassworm-malware-hits-400-code-repos-on-activity-7439936993440100352-bG3z'},
+      {t:'INTERPOL Global Fraud 2026 – 442 mdr USD i förluster, AI-drivna deepfakes',u:'https://www.linkedin.com/posts/svensk-osint_interpol-activity-7439938917782585344-zd8-'},
+      {t:'Intoxalock – cyberattack mot alkolåsföretag slår mot rättsliga system',u:'https://www.linkedin.com/posts/svensk-osint_breathalyzer-company-under-security-breach-activity-7440817166721040385-Dtge'},
+      {t:'Drönare över Barksdale AFB (B-52/AFGSC) – 12–15 per våg, ovanliga signalmönster',u:'https://www.linkedin.com/posts/svensk-osint_multiple-waves-of-unauthorized-drones-recently-activity-7440810732402851840-vIHI'},
+    ]},
+    {id:'ov5',l:'Kina – teknik & geopolitik',arts:[
+      {t:'Tre åtalade för smuggling av AI-servrar till Kina – 510 mkr USD via Sydostasien',u:'https://www.linkedin.com/posts/svensk-osint_three-charged-with-conspiring-to-unlawfully-activity-7440805643269124096-dzAt'},
+      {t:'USA:s underrättelsetjänster: Kina beslutat inte om invasion av Taiwan till 2027',u:'https://www.linkedin.com/posts/svensk-osint_us-intelligence-agencies-not-expecting-china-activity-7440680515835359232-XrBP'},
+      {t:'50 Cent Army – kinesiska statsnättroll är tjänstemän som översvämmer med patriotism',u:'https://www.linkedin.com/feed/update/urn:li:activity:7440343244439220226'},
+    ]},
+    {id:'ov6',l:'OSINT, teknik & övrigt',arts:[
+      {t:'BetterLeaks – open source secrets scanner, CI/CD-integration',u:'https://www.linkedin.com/posts/svensk-osint_betterleaks-a-new-open-source-secrets-scanner-activity-7439209529763872769-V_Of'},
+      {t:'Microsoft Project Silica – data inskrivet i kvartsbaserat glas, arkivbeständig cold storage',u:'https://www.linkedin.com/posts/svensk-osint_microsofts-project-silica-write-once-storage-activity-7439211199587631104-4KeS'},
+      {t:'Terafab – Musk lanserar halvledarsatsning, hotar TSMC och Samsung',u:'https://www.linkedin.com/posts/svensk-osint_elon-musk-says-his-chipmaking-terafab-project-activity-7439210827448102912-H3UP'},
+      {t:'Vapenteknisk diffusion – $96 robot visar sänkta trösklar, ukrainska lärdomar',u:'https://www.linkedin.com/posts/svensk-osint_l%C3%A5gkostnadsinnovation-och-vapenteknisk-diffusion-activity-7440683284084244480-mf7F'},
+      {t:'Moskvabor köper walkie-talkies – reaktion på Rysslands ökande internetkontroll',u:'https://www.linkedin.com/posts/svensk-osint_ryska-internetkontrollen-v%C3%A4xer-moskvabor-activity-7439560993489334272-nPVu'},
+      {t:'Reuters identifierar Robin Gunningham från Bristol som Banksy via OSINT',u:'https://www.linkedin.com/posts/svensk-osint_utpekandet-av-banksy-den-anonyme-gatukonstn%C3%A4ren-activity-7439249115710132224-YQ6M'},
+      {t:'Raulito – Castros son och informellt maktcentrum i kubansk säkerhetsstruktur',u:'https://www.linkedin.com/posts/svensk-osint_with-the-us-pressuring-cuba-a-castro-known-activity-7439210555900346368-ECgM'},
+    ]},
+  ]},
+]},
+
+// ─── V.13 ────────────────────────────────────────────────────────────────
+{w:13,year:2026,date:'Mar 2026',cats:[
+  {id:'sv',l:'Sverige',cs:'csV',color:'#4a9eff',a:215,subs:[
+    {id:'sv1',l:'Sanktioner & Kubal/Rusal',arts:[
+      {t:'Kubal Sundsvall: två anhållna för grovt sanktionsbrott – NI-insats mot Rusal-ägd anläggning',u:'https://www.linkedin.com/posts/svensk-osint_tv%C3%A5-personer-anh%C3%A5llna-f%C3%B6r-grovt-sanktionsbrott-activity-7442962332617662464-xaRs'},
+    ]},
+    {id:'sv2',l:'Säkerhetszoner & Skyddsobjekt',arts:[
+      {t:'Polisen inför säkerhetszon i Diplomatstaden – 24 mars–7 april 2026, USA:s och Israels ambassader',u:'https://www.linkedin.com/posts/svensk-osint_polisen-inf%C3%B6r-s%C3%A4kerhetszon-i-delar-av-diplomatstaden-activity-7442223347138170880-JE2E'},
+      {t:'Kontroll av personer vid Ringhals kärnkraftverk – skyddsobjektsincident',u:'https://www.linkedin.com/posts/svensk-osint_personer-kontrollerade-vid-ringhals-activity-7441574215650222080-8EiS'},
+      {t:'VMA-tyfoner demonterade i Borlänge – åtal för sabotage av samhällsviktig varningsinfrastruktur',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441867981694963712'},
+      {t:'Youtuber klättrar i Teracom-master – döms för obehörigt tillträde och olovlig avbildning av skyddsobjekt',u:'https://www.linkedin.com/posts/svensk-osint_youtuber-fr%C3%A5n-ume%C3%A5-kl%C3%A4ttrade-i-master-och-share-7442552031397044224-TAfL'},
+    ]},
+    {id:'sv3',l:'Organiserad brottslighet & CaaS',arts:[
+      {t:'Uddevalla/Malmö CaaS-mål: fem pojkar åtalas – Aimpoint-koppling i signalchattar',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442189010216787968'},
+      {t:'Svensk tonårsflicka erkänner mordförsök i dansk domstol – beställningsvåld via Signal',u:'https://www.linkedin.com/posts/svensk-osint_svensk-ton%C3%A5rsflicka-erk%C3%A4nner-mordf%C3%B6rs%C3%B6k-i-activity-7442889050530672642-8Wz6'},
+      {t:'3D-printade vapen: far och son döms – FGC-9, 250% ökning av beslag 2024–2025',u:'https://www.linkedin.com/feed/update/urn:li:activity:7443248106382729216'},
+      {t:'BK Forwards målvakt Hugo Mosshagen mördad i Örebro natten mot 22 mars',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442119537790963712'},
+      {t:'Person skjuten på SL-buss 824 i Tyresö – avled senare, skolor inrymdes',u:'https://www.linkedin.com/posts/svensk-osint_person-skjuten-p%C3%A5-buss-i-tyres%C3%B6-activity-7442641133127507968-bxgf'},
+      {t:'Uppgifter: unga flickor misstänkta gärningsmän i skjutningarna i Vårby, Malmö och Örebro',u:'https://www.linkedin.com/posts/svensk-osint_uppgifter-unga-flickor-misst%C3%A4nks-f%C3%B6r-flera-activity-7442877199864733696-GoUx'},
+      {t:'Polis grep misstänkta i nästan samtliga 27 dödsskjutningar 2025 – underrättelsedriven metod',u:'https://www.linkedin.com/posts/svensk-osint_polisen-grep-misst%C3%A4nkta-f%C3%B6r-n%C3%A4stan-alla-d%C3%B6dsskjutningar-activity-7441814069692661760-YRfH'},
+      {t:'58-årig man åtalas för synnerligen grovt narkotikabrott – 200 000 tabletter, koppling till greve Piper-mordförsök',u:'https://www.linkedin.com/posts/svensk-osint_f%C3%B6rs%C3%B6kte-m%C3%B6rda-greve-%C3%A5talas-f%C3%B6r-att-ha-activity-7441553513609945088-t0Fr'},
+      {t:'Två gripna i Trelleborgs hamn för grovt utförselhäleri – nytt brott sedan september 2025',u:'https://www.linkedin.com/posts/svensk-osint_tv%C3%A5-gripna-i-trelleborg-f%C3%B6r-nyinf%C3%B6rt-brott-activity-7443172154780643328-gqgU'},
+      {t:'Expolitiker döms för penningtvättsförseelse – trodde sig hjälpa Brian May samla in pengar',u:'https://www.linkedin.com/posts/svensk-osint_expolitiker-d%C3%B6ms-trodde-att-hon-hj%C3%A4lpte-activity-7442681988701900801-9DdR'},
+      {t:'Skogsprotest blockerade tågtrafik till SCA Östrand i Timrå – aktivister låste fast sig vid spår',u:'https://www.linkedin.com/posts/svensk-osint_aktivister-l%C3%A5ste-fast-sigvidtimmert%C3%A5g-activity-7442522259703062528-JvIe'},
+      {t:'25-årig man döms för grov misshandel – knuffade 18-åring mot tunnelbanetåg vid Zinkensdamm',u:'https://www.linkedin.com/posts/svensk-osint_ville-smaka-pommes-frites-knuffades-mot-activity-7442958716745834496-YPc0'},
+      {t:'Finanspolisens årsrapport 2025: 76 098 misstankerapporter, 200 mkr dispositionsförbud',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442897676389482496'},
+      {t:'Nazistiska inslag på allsvenska läktare – säkerhetsexperter varnar för normalisering',u:'https://www.linkedin.com/posts/svensk-osint_varningen-nazistiska-inslag-p%C3%A5-allsvenska-activity-7442815647576817664-7Wjf'},
+    ]},
+    {id:'sv4',l:'Rättsfall & Juridik',arts:[
+      {t:'Lundin-rättegången: åklagaren yrkar 10 år för Ian Lundin – folkrättsbrott i Sudan 1999–2003',u:'https://www.linkedin.com/posts/svensk-osint_ian-lundin-och-alexander-schneite-i-r%C3%A4tten-activity-7442965893204140032-wLvz'},
+      {t:'Nordfront-utredningen läggs ner – grundlagsändring 2019 skyddar ansvarig utgivare vid borttagning',u:'https://www.linkedin.com/feed/update/urn:li:activity:7443293900275941377'},
+      {t:'IMY inleder tillsyn av Svensk Bakgrundsanalys AB – personuppgifter vid bakgrundskontroller',u:'https://www.linkedin.com/posts/svensk-osint_imy-granskar-akt%C3%B6r-f%C3%B6r-bakgrundskontroller-activity-7442640570113728512-u0Gt'},
+      {t:'Ryskt bolag stämmer skiljemän personligen i svensk tingsrätt – principiellt prejudikat',u:'https://www.linkedin.com/posts/svensk-osint_ryska-bolaget-st%C3%A4mde-skiljem%C3%A4n-i-svensk-tingsr%C3%A4tt-activity-7442459331519791104-Joal'},
+      {t:'Knutbyfallet: överåklagaren håller nytt material hemligt med hänvisning till sekretess',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442092677858390016'},
+    ]},
+    {id:'sv5',l:'Försvar, Energi & Infrastruktur',arts:[
+      {t:'SSC Space–FMV: 209 mkr för satellituppsändning från Esrange – operativ förmåga 2028',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442864497624612864'},
+      {t:'Kärnfull Next ansöker om SMR i Valdemarsvik – första nya kärnkraftsansökan på 50 år',u:'https://www.linkedin.com/posts/svensk-osint_lag-2025587-om-statligt-st%C3%B6d-f%C3%B6r-investeringar-activity-7441837132207337473-CTSo'},
+      {t:'Nationell vägledning reservkraft – Energimyndigheten, MSB, PTS m.fl., krislärdomar från Ukraina',u:'https://www.linkedin.com/posts/svensk-osint_v%C3%A4gledning-f%C3%B6r-hantering-av-reservkraftsprocessen-activity-7442849593098305537-Fii8'},
+      {t:'Caffa-befälhavaren kvar i häkte – rysk skuggflotta, Transportstyrelsen nyttjandeförbud',u:'https://www.linkedin.com/posts/svensk-osint_rysk-bef%C3%A4lhavare-fortsatt-h%C3%A4ktad-activity-7442639040471932928-b7M7'},
+      {t:'Bilbrand Trollhättan – sju fordon totalförstörda, anmälan om grov skadegörelse',u:'https://www.linkedin.com/posts/svensk-osint_stor-bilbrand-i-trollh%C3%A4ttan-activity-7443926350920564737-na7W'},
+      {t:'Taxiförbundets Branschläget 2026 – taxi som beredskapsresurs, 49% konkursökning 2025',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442894399098896384'},
+    ]},
+    {id:'sv6',l:'Desinformation & MPF',arts:[
+      {t:'MPF publicerar öppen årssammanfattning – AI-driven påverkan, stärkt analysförmåga',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442846369033179136'},
+    ]},
+  ]},
+  {id:'no',l:'Norden',cs:'csN',color:'#3de8b0',a:315,subs:[
+    {id:'no1',l:'Danmark – val & påverkan',arts:[
+      {t:'FE/PET/SAMSIK: inga bekräftade samordnade påverkansoperationer mot danska Folketing-valet 24 mars',u:'https://www.linkedin.com/posts/svensk-osint_pressmeddelande-activity-7442602166109847553-6dvL'},
+    ]},
+    {id:'no2',l:'Finland – sanktioner & säkerhet',arts:[
+      {t:'Finskt bolag exporterade 135 lastbilar till Ryssland i strid med EU-sanktioner – Nuijamaa-rutten',u:'https://www.linkedin.com/posts/svensk-osint_finl%C3%A4ndskt-f%C3%B6retag-tj%C3%A4nade-miljoner-p%C3%A5-att-activity-7442463439672983553-4ynM'},
+      {t:'Polsk grupp smugglade alfa-PVP och marijuana till Finland via långtradare – öppet vid Borgå motorväg',u:'https://www.linkedin.com/posts/svensk-osint_lastade-droger-vid-borg%C3%A5-motorv%C3%A4g-ett-activity-7442459032314871808-tau3'},
+      {t:'Ukrainska drönare kraschade nära Kouvola – misstänkt territorialkränkning, finskt stridsflyg insatt',u:'https://www.linkedin.com/posts/svensk-osint_poliisi-tarkastaa-lent%C3%A4v%C3%A4%C3%A4-laitetta-joka-activity-7443990471439286272-GUpQ'},
+    ]},
+    {id:'no3',l:'Norge – militär mobilitet',arts:[
+      {t:'Forsvaret beställer 50 järnvägsvagnar för Leopard 2 A8 – nordisk beställning totalt 120 vagnar',u:'https://www.linkedin.com/posts/svensk-osint_avtale-om-drift-og-vedlikehold-av-forsvarets-activity-7443940494167994369-V5Lq'},
+    ]},
+  ]},
+  {id:'eu',l:'Europa',cs:'csE',color:'#f5a041',a:42,subs:[
+    {id:'eu1',l:'Hybridhot & Spionage',arts:[
+      {t:'Tyskland gripper två för spionage mot drönarleverantör till Ukraina – förstadium till vidare operation',u:'https://www.linkedin.com/posts/svensk-osint_germany-says-two-people-arrested-on-suspicion-activity-7442322754164404224-drz7'},
+      {t:'Ungern misstänks ha vidarebefordrat EU-information till Ryssland – Szijjártó/Lavrov-kontakter',u:'https://www.linkedin.com/posts/svensk-osint_eu-has-tools-to-bypass-hungarys-ukraine-activity-7441768071834329088-7HKX'},
+      {t:'Lettland varnar för rysk informationsoperation: Baltikum påstås ha öppnat luftrum för Ukraina',u:'https://www.linkedin.com/feed/update/urn:li:activity:7443308440434688000'},
+      {t:'Moldavien: rekryter för sabotage och upploppstaktik – kopplingar till Shor/Ryssland, 151 hybridincidenter i Europa',u:'https://www.linkedin.com/posts/svensk-osint_moldova-court-cases-reveal-russias-transnational-activity-7443769236096958465-aGD1'},
+      {t:'Molotovcocktails mot Ryska huset i Prag – fasad skadad, Ryssland kallade upp ambassadör',u:'https://www.linkedin.com/posts/svensk-osint_an-unknown-attacker-threw-molotov-cocktails-activity-7444014394939883520-W66H'},
+    ]},
+    {id:'eu2',l:'Ungern & valpåverkan',arts:[
+      {t:'Ungern öppnar spionageärende mot journalist Szabolcs Panyi inför parlamentsvalet 12 april',u:'https://www.linkedin.com/posts/svensk-osint_hungarys-government-files-charges-against-activity-7443975729882701824-mZin'},
+      {t:'SVR uppges ha diskuterat iscensatt attentat mot Orbán – Matryoshka sprider parallella fejkvideor',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441816191490224129'},
+      {t:'SBU namnger ungersk officer Zoltán Andre som ledare för spionnätverk i Zakarpattia',u:'https://www.linkedin.com/posts/svensk-osint_ukraine-names-hungarian-officer-allegedly-activity-7442302584725385216-vis4'},
+    ]},
+    {id:'eu3',l:'Iranskt hot & terrorism',arts:[
+      {t:'Hatzola-ambulanser i Golders Green satta i brand – antisemitiskt hatbrott, Iran-kopplad grupp tar ansvar',u:'https://www.linkedin.com/posts/svensk-osint_jewish-charity-ambulances-set-on-fire-and-activity-7441942857868910592-DeaN'},
+      {t:'Iran rekryterar via Telegram i UK mot israeliska och judiska mål – MI5: 20+ planer senaste året',u:'https://www.linkedin.com/posts/svensk-osint_iranian-spies-recruiting-british-teenagers-activity-7443994100728504320-pCC8'},
+      {t:'Mohamed Shafiei skjuten i Schoonhoven – iransk transnationell repression misstänkt, gripen i Dortmund',u:'https://www.linkedin.com/posts/svensk-osint_%DB%8C%DA%A9-%D9%BE%D9%84%DB%8C%D8%B3-%D8%A7%DB%8C%D8%B1%D8%A7%D9%86%DB%8C-%D9%85%D8%AE%D8%A7%D9%84%D9%81-%D8%AC%D9%85%D9%87%D9%88%D8%B1%DB%8C-%D8%A7%D8%B3%D9%84%D8%A7%D9%85%DB%8C-%D8%AF%D8%B1-%D9%87%D9%84%D9%86%D8%AF-activity-7443990960809603072-_wyr'},
+      {t:'Hamas operativ närvaro i Europa – vapengömmor, drönare, attentatsplanering mot judiska/israeliska mål',u:'https://www.linkedin.com/posts/svensk-osint_kopplades-till-hamas-inte-l%C3%A4ngre-misst%C3%A4nkt-activity-7443416821048700928-bLv0'},
+      {t:'Misstänkt bombdåd utanför Bank of America Paris – IED, terrorutredning öppnad',u:'https://www.linkedin.com/posts/svensk-osint_france-opens-probe-into-suspected-attack-activity-7443752866407776257-s7uu'},
+      {t:'Franska lokalval: politiskt våld mot vänsteraktivister i Nice och Nîmes',u:'https://www.linkedin.com/posts/svensk-osint_municipales-%C3%A0n%C3%AEmes-lagauche-avec-le-activity-7442254385625067521-kV6R'},
+      {t:'Stérin och Périclès-projektet: 150 mkr euro för att bygga politiskt maskineri inför presidentvalet 2027',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441735037659541505'},
+      {t:'Derby: bil körde in i folksamling – sju till sjukhus, man i 30-årsåldern gripen',u:'https://www.linkedin.com/posts/svensk-osint_multiple-injuries-after-car-strikes-pedestrians-activity-7443923506582429696-IkHG'},
+    ]},
+    {id:'eu4',l:'SBU-operationer Ukraina',arts:[
+      {t:'SBU slår ut GRU-styrt nätverk för kontraktsmord – skytten dödades, tio gripna',u:'https://www.linkedin.com/posts/svensk-osint_ukraine-liquidates-hitman-working-for-russias-activity-7443968146635386880-1Zw7'},
+      {t:'GRU-agent gripen i Rivne – geolokaliserade luftvärnssystem och radarstationer via Google Maps',u:'https://www.linkedin.com/posts/svensk-osint_sbu-detained-an-agent-in-rivne-accused-of-activity-7443965174484606976-ZrTj'},
+      {t:'FSB-agent Kropyvnytskyi: förberedde attack mot transformatorstation med 300g plastid',u:'https://www.linkedin.com/posts/svensk-osint_sbu-nabs-russian-agent-planning-substation-activity-7443978003568680960-AU-e'},
+      {t:'Agent i Zakarpattia försökte registrera Starlink-terminaler via hustru och äldre släkting',u:'https://www.linkedin.com/posts/svensk-osint_%D0%B6%D0%B8%D1%82%D0%B5%D0%BB%D1%8C-%D0%B7%D0%B0%D0%BA%D0%B0%D1%80%D0%BF%D0%B0%D1%82%D1%82%D1%8F-%D0%BD%D0%B0%D0%BC%D0%B0%D0%B3%D0%B0%D0%B2%D1%81%D1%8C-%D0%B7%D0%B0%D1%80%D0%B5%D1%94%D1%81%D1%82%D1%80%D1%83%D0%B2%D0%B0%D1%82%D0%B8-activity-7443971100751077377-Gn97'},
+      {t:'17-åring gripen i Dnipro – familjebaserad underrättelsekedja, far gripen i januari',u:'https://www.linkedin.com/posts/svensk-osint_sbu-detains-teen-in-dnipro-suspected-of-guiding-activity-7443985324206096384-zY6Y'},
+      {t:'GRU-agent Donetsk/Pokrovsk: koordinater för artilleriställningar för styrda glidbomber',u:'https://www.linkedin.com/posts/svensk-osint_%D0%BF%D0%BE%D0%BB%D1%8E%D0%B2%D0%B0%D0%B2-%D0%BD%D0%B0-%D0%B0%D1%80%D1%82%D0%B8%D0%BB%D0%B5%D1%80%D1%96%D1%8E-%D0%B4%D0%BB%D1%8F-%D0%BA%D0%B0%D0%B1%D1%96%D0%B2-%D0%BF%D1%96%D0%B4-%D0%BF%D0%BE%D0%BA%D1%80%D0%BE%D0%B2%D1%81%D1%8C%D0%BA%D0%BE%D0%BC-activity-7443997374349209601-o_1I'},
+      {t:'SBU gripper två 16-åringar i Poltava: IED under militärfordon, rekryterade via Telegram',u:'https://www.linkedin.com/posts/svensk-osint_sbu-detains-teenagers-in-poltava-over-plot-activity-7443958373101760512-5bcL'},
+      {t:'Dubbelattentat i Bucha – andra laddning mot utryckande polis, 21-årig gärningsman gripen',u:'https://www.linkedin.com/posts/svensk-osint_sbu-and-national-police-detain-perpetrator-activity-7443961829430788096-udqo'},
+    ]},
+    {id:'eu5',l:'FIMI & Desinformation',arts:[
+      {t:'UK Disinformation Diplomacy: Ryssland akutast hot, Sverige MPF som förebild för NCDC',u:'https://www.linkedin.com/posts/svensk-osint_disinformation-diplomacy-activity-7443424867632312320-xy6C'},
+      {t:'Pro-rysk fejkvideo om antiukrainsk protest i Paris – BBC-material manipulerat med AI',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441877775373832193'},
+      {t:'Drönare träffade skorstenen vid Auvere-kraftverket i Estland – flyg in från Ryssland',u:'https://www.linkedin.com/posts/svensk-osint_drone-entering-estonian-airspace-from-russia-activity-7442519078256398336-BO8F'},
+      {t:'UK skärper regler för politiska donationer – 100 000 pund tak, kryptoförbud retroaktivt 25 mars',u:'https://www.linkedin.com/posts/svensk-osint_the-rycroft-review-report-of-the-independent-activity-7444013406753390592-l3Lk'},
+      {t:'Pro-Kreml-bloggare som kritiserar Putins strategi tvångsintagen på psykiatrisk klinik',u:'https://www.linkedin.com/posts/svensk-osint_pro-kreml-bloggare-kritiserar-putin-skickas-activity-7441778742751838208-Kkl_'},
+      {t:'3 223 kilo kokain beslagtaget i Klundert/Papendrecht – Benelux-hamnkoppling',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441880700066283520'},
+      {t:'Cyberintrång mot Nederländernas finansministerium – extern varning, oklart om data läckt',u:'https://www.linkedin.com/posts/svensk-osint_dutch-finance-ministry-probing-cyber-breach-activity-7443963446317961216-AD96'},
+    ]},
+  ]},
+  {id:'ov',l:'Övriga världen',cs:'csO',color:'#f04e7c',a:128,subs:[
+    {id:'ov1',l:'Iran & Hormuz-krisen',arts:[
+      {t:'Trump: Hormuz måste öppnas inom 48 timmar – Pentagon förbereder alternativ mot Kharg Island',u:'https://www.linkedin.com/posts/svensk-osint_pentagon-prepares-for-massive-final-blow-activity-7443010136907935744-Epld'},
+      {t:'Iran hotar med att stänga Bab al-Mandeb om USA genomför angrepp mot iranskt territorium',u:'https://www.linkedin.com/posts/svensk-osint_iran-says-it-is-reviewing-us-proposal-but-activity-7442697586353786881-puzG'},
+      {t:'COSCO-fartyg tvingades vända i Hormuz – iranskt avgiftssystem och IRGC-kontroll växer fram',u:'https://www.linkedin.com/posts/svensk-osint_chinese-ships-halt-attempt-to-exit-hormuz-activity-7443393474214719489-EEyr'},
+      {t:'Prince Sultan Air Base träffad av iranska angrepp – 12 amerikaner skadade',u:'https://www.linkedin.com/posts/svensk-osint_iran-fick-rysk-hj%C3%A4lp-activity-7443754908937527297-OczX'},
+      {t:'Iranska missiler nära Dimona – OSINT-analys: geolokalisering vs. avsikt, attributionsutmaningar',u:'https://www.linkedin.com/posts/svensk-osint_missilangreppet-n%C3%A4ra-dimona-i-mars-2026-illustrerar-activity-7441741180578467840-7v74'},
+      {t:'Handala Hack Team: intrång i FBI-chefen Kash Patels privata mejl – MOIS-koppling fastställd av DOJ',u:'https://www.linkedin.com/posts/svensk-osint_pro-iranian-hacking-group-claims-credit-for-activity-7443396723042971648-u1L-'},
+      {t:'Handala uppger sig ha läckt 14 GB om tidigare Mossad-chef Tamir Pardo – obekräftat',u:'https://www.linkedin.com/posts/svensk-osint_from-hunter-to-hunted-mossads-former-chief-activity-7443974399537618944-XMMe'},
+      {t:'Iran riktar repression mot exiliranier: 15 personers tillgångar, 466 gripna för nätaktivitet',u:'https://www.linkedin.com/posts/svensk-osint_iran-targets-assets-of-15-iranian-expats-activity-7443960058775752704-lWoj'},
+    ]},
+    {id:'ov2',l:'Energi & Logistik',arts:[
+      {t:'Global LNG-marknad under press: Qatar force majeure + Hormuz-störningar, IEA-kalkyl försvagad',u:'https://www.linkedin.com/posts/svensk-osint_gas-market-report-q1-2026-analysis-iea-activity-7442678654138040321-IPYD'},
+      {t:'Hormuz-kris lamslår aluminiumförsörjningen – Qatalum stänger, Bahrain drar ner 19%',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441839247159894016'},
+      {t:'Bränslepriser stiger i Pakistan, Egypten – globala syd saknar buffertar för Hormuz-chock',u:'https://www.linkedin.com/posts/svensk-osint_from-pakistan-to-egypt-iran-war-drives-up-activity-7442457207016849408-PIt_'},
+      {t:'Brand i ryska oljehamnen Primorsk efter ukrainsk drönarattack – export tillfälligt stoppad',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441828159039188992'},
+      {t:'Ryskt tankfartyg Anatoly Kolodkin spåras mot Kuba med 730 000 fat råolja – UK Marine följer',u:'https://www.linkedin.com/posts/svensk-osint_uk-tracks-russian-tanker-as-us-tightens-the-activity-7442461487689912320-hHoH'},
+      {t:'Ekonomiprofessor: kriget i Mellanöstern driver inflation via energi och transportkostnader',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441825077311979521'},
+    ]},
+    {id:'ov3',l:'Ryssland & Ukraina',arts:[
+      {t:'Ryssland bygger modulärt arktiskt sambandssystem DT-10PM – 600 MUSD, Norra flottan och Rosatom',u:'https://www.linkedin.com/posts/svensk-osint_russia-builds-600m-arctic-military-communications-activity-7441571776217825280-iwlz'},
+      {t:'Ukraina genomförde 365 verifierade drönarangrepp på 50–250 km djup senaste året',u:'https://www.linkedin.com/posts/svensk-osint_hundreds-of-air-defense-systems-and-other-activity-7441756053928607744-oq_8'},
+      {t:'Ukrainsk drönarattack skadar FSB-patrullfartyg vid Viborgs varv nära Sankt Petersburg',u:'https://www.linkedin.com/posts/svensk-osint_ukrainsk-dr%C3%B6nare-tr%C3%A4ffar-fsb-fartyg-vid-varv-activity-7442553072263933952-IZ23'},
+      {t:'Zelenskyj: ryska satelliter fotograferade amerikanska baser i Mellanöstern för Iran',u:'https://www.linkedin.com/posts/svensk-osint_iran-fick-rysk-hj%C3%A4lp-activity-7443754908937527297-OczX'},
+      {t:'Oljepriset ger Kreml andrum – men strukturella svagheter kvarstår: krig, inflation, sanktioner',u:'https://www.linkedin.com/posts/svensk-osint_oljepriset-ger-kreml-andrum-men-strukturella-activity-7442639911591223296-lcfE'},
+      {t:'Pussy Riot protesterar mot Ubiquiti – nätverksutrustning når rysk militär via tredjeländer',u:'https://www.linkedin.com/posts/svensk-osint_pussy-riot-protests-us-tech-company-ubiquiti-activity-7443761926146269184-bsWp'},
+      {t:'Två ryssar åtalas i Angola för påverkansoperationer kopplade till Africa Politology/Wagner',u:'https://www.linkedin.com/posts/svensk-osint_angola-two-russians-with-ties-to-former-activity-7443955803071590400-RzrO'},
+    ]},
+    {id:'ov4',l:'Kina – militär & spionage',arts:[
+      {t:'Kina demonstrerar Atlas-systemet: ett fordon samordnar 96 drönare simultant',u:'https://www.linkedin.com/posts/svensk-osint_kina-har-nu-visat-upp-en-ny-dr%C3%B6narsv%C3%A4rmsl%C3%B6sning-activity-7442871221077086208-DzXO'},
+      {t:'Kina genomför skarpa övningar med Type 055-jagare – kryssarkapacitet, högintensiva scenarier',u:'https://www.linkedin.com/posts/svensk-osint_kina-genomf%C3%B6r-skarp-eldgivning-med-sina-mest-activity-7441773813991690240-Q6W7'},
+      {t:'Kinesisk underrättelseinhämtning mot USA: OPM, Equifax, Volt Typhoon, Salt Typhoon, Silk Typhoon',u:'https://www.linkedin.com/pulse/s%25C3%25A5-byggdes-kinas-inh%25C3%25A4mtning-av-amerikanska-hemligheter-svensk-osint-bav9f/'},
+      {t:'GoLaxy-läckt dokument: kinesiskt AI-drivet påverkansoperationssystem mot Taiwan, HK, Xinjiang',u:'https://www.linkedin.com/posts/svensk-osint_l%C3%A4ckt-dokument-ai-anv%C3%A4nds-i-kinesiska-p%C3%A5veransoperationer-activity-7442120487037652992-wmIF'},
+      {t:'USA:s exportkontroller mot kinesisk teknik – halvledarslagfält och fragmentering av teknikmarknaden',u:'https://www.linkedin.com/posts/svensk-osint_nationell-s%C3%A4kerhet-eller-handelskrig-100-activity-7442460036427186176--vRH'},
+      {t:'AIC och CSIS: spionage kostade Australien 12,5 mdr AUD – synergi med kinesiska påverkansoperationer',u:'https://www.linkedin.com/posts/svensk-osint_tv%C3%A5-centrala-rapporter-fr%C3%A5n-australian-institute-activity-7441732628807860224-ujKT'},
+      {t:'Tech Predictions 2049: AI, robotik, kvantteknik och Kinas 2049-målbild',u:'https://www.linkedin.com/posts/svensk-osint_tech-predictions-2049-activity-7442556519243587584-cyYZ'},
+      {t:'Hongkong: ny regel kräver att invånare lämnar ut lösenord till enheter vid säkerhetsutredningar',u:'https://www.linkedin.com/posts/svensk-osint_hongkong-inf%C3%B6r-nya-regler-kan-tvinga-inv%C3%A5nare-activity-7441882380317011968-pK9X'},
+    ]},
+    {id:'ov5',l:'USA, cyber & OSINT',arts:[
+      {t:'Pentagon formaliserar Palantirs Maven AI – 1,3 mdr USD, nästan trefaldig budgethöjning',u:'https://www.linkedin.com/posts/svensk-osint_pentagon-formalizes-palantirs-maven-ai-as-activity-7442455047491334144-z0F7'},
+      {t:'IISS Military Balance 2026: globala försvarsutgifter 2,63 biljoner USD, Europa 21%',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442471951220137984'},
+      {t:'USA höjer åldersgräns för militär rekrytering till 42 år – bredare bas, teknik och cyber',u:'https://www.linkedin.com/posts/svensk-osint_usa-h%C3%B6jer-%C3%A5ldersgr%C3%A4nsen-f%C3%B6r-milit%C3%A4r-rekrytering-activity-7442642689084280832-oWFy'},
+      {t:'USA rymdpolitik: Space Force krigsföringsramverk "space superiority", månbas 2030',u:'https://www.linkedin.com/feed/update/urn:li:activity:7441814571063091200'},
+      {t:'NASA presenterar plan för permanent månbas som språngbräda mot Mars – Artemis',u:'https://www.linkedin.com/posts/svensk-osint_nasa-presenterar-plan-f%C3%B6r-permanent-m%C3%A5nbas-activity-7442458184277012480-ps-u'},
+      {t:'MacDill AFB: IED vid CENTCOM-högkvarter – syskon Zheng åtalade, en på flykt till Kina',u:'https://www.linkedin.com/posts/svensk-osint_fbi-investigates-video-claiming-responsibility-activity-7443015264499290113-Lsu6'},
+      {t:'USA utfärdar global resevarning – förhöjd hotbild terrorism och civila oroligheter',u:'https://www.linkedin.com/posts/svensk-osint_usa-utf%C3%A4rdar-global-resevarning-uppmanar-activity-7441883131139346432-1Y7t'},
+      {t:'"No Kings"-protester i 3 200 städer – mot Trump, Irankriget och auktoritärt styre',u:'https://www.linkedin.com/posts/svensk-osint_no-kings-rallies-draw-crowds-across-us-activity-7443945396218880000-PO43'},
+      {t:'Australien: två terrorärenden mot minderåriga – IS-flagga Melbourne, masskadeguider Sydney',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442468054036430850'},
+      {t:'FBI varnar: ryska underrättelsetjänster nätfiskar Signal-användare inom politik och säkerhet',u:'https://www.linkedin.com/posts/svensk-osint_ryska-underr%C3%A4ttelsetj%C3%A4nster-kopplas-till-activity-7441736368940179456-ngsX'},
+      {t:'TeamPCP wiper-malware mot iranska system via Kubernetes – selektiv geografisk destruktion',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442093504765280256'},
+      {t:'Ligolo-Ng: lateral rörelse via krypterade tunnlar – zero trust och nätverkssegmentering avgörande',u:'https://www.linkedin.com/posts/svensk-osint_oscp-exam-training-activity-7441764753342910464-qJAR'},
+      {t:'Torg Grabber: ny malware mot 728+ kryptoplånböcker – kringgår säkerhetsmekanismer',u:'https://www.linkedin.com/posts/svensk-osint_ny-skadlig-kod-riktar-sig-mot-hundratals-activity-7442641229491650560-_wvT'},
+      {t:'OSINT som primär underrättelsedisciplin – demokratisering vs. desinformation och motåtgärder',u:'https://www.linkedin.com/posts/svensk-osint_why-osint-deserves-the-same-status-as-other-activity-7441756715030630400-gqep'},
+      {t:'The Economist: OSINT svårare i moderna konflikter – OpSec, AI-innehåll, stängda API:er',u:'https://www.linkedin.com/posts/svensk-osint_open-source-intelligence-shuts-down-activity-7441775419818790912-FPZA'},
+      {t:'SpecialEurasia: fyra OSINT-verktyg för Iran – Parseek, Iran Monitor, SignalCockpit',u:'https://www.linkedin.com/posts/svensk-osint_fyra-osint-verktyg-f%C3%B6r-analys-av-iran-och-activity-7441776368469737472-ChaX'},
+      {t:'AlixLabs: 40 MUSD för helium-atomstrålelitografi – europeisk halvledarkapacitet',u:'https://www.linkedin.com/posts/svensk-osint_microsoft-backed-start-up-raises-40-million-activity-7442455784166178816-Usr6'},
+      {t:'Firefox version 149: inbyggd VPN 50 GB/mån – begränsad till USA, UK, DE, FR',u:'https://www.linkedin.com/posts/svensk-osint_firefox-now-has-a-free-built-in-vpn-with-activity-7442456518400069632-4k4A'},
+      {t:'GrapheneOS vägrar följa åldersverifieringskrav – dataminimering vs. övervakningsinfrastruktur',u:'https://www.linkedin.com/posts/svensk-osint_grapheneos-v%C3%A4grar-f%C3%B6lja-lagkrav-p%C3%A5-%C3%A5ldersverifiering-activity-7441777409194020864-pDr7'},
+      {t:'WMO: klimatsystemet i strukturell obalans – 2024 varmaste, CO₂ 423,9 ppm, havens uppvärmningstakt fördubblad',u:'https://www.linkedin.com/posts/svensk-osint_klimatsystemet-i-accelererande-obalans-enligt-activity-7441735192588963840-HEoe'},
+      {t:'Grottbakterier uppvisar antibiotikaresistens trots noll mänsklig påverkan – naturliga reservoarer',u:'https://www.linkedin.com/posts/svensk-osint_ur%C3%A5ldriga-grottbakterier-visar-motst%C3%A5ndskraft-activity-7441739909482209280-LCmg'},
+      {t:'Valero raffinaderi Port Arthur: explosion och brand – invånare uppmanas stanna inomhus',u:'https://www.linkedin.com/feed/update/urn:li:activity:7442088699313537024'},
+      {t:'First Wap/Altamides: 1,5 miljoner SS7-spårningsförsök mot 15 000 telefonnummer globalt',u:'https://www.linkedin.com/posts/svensk-osint_investigating-location-tracking-surveillance-activity-7443983497607716864-PvPA'},
+      {t:'Epstein-assistent Pozhidaeva träder fram – möjliga FSB-kopplingar till fadern Yury Pozhidaev',u:'https://www.linkedin.com/feed/update/urn:li:activity:7443566066301083648'},
+      {t:'764-nätverket: Maryland-man erkänner exploatering av tio minderåriga flickor, FBI och Europol eskalerar',u:'https://www.linkedin.com/posts/svensk-osint_maryland-man-and-alleged-member-of-extremist-activity-7443592558011895808-mStq'},
+    ]},
+  ]},
+]},
+];
+
+// ════════════════════════════════════════════════════════════════
+// LAYOUT-MOTOR
+// Subnoder placeras i en ring runt kategorinoden.
+// Inga manuella vinklar – kollisionsfri automatisk fördelning.
+// ════════════════════════════════════════════════════════════════
+let activeWeekIdx=WEEKS.length-1;
+let T={x:0,y:0,s:1},CX,CY,dragging=false,sx,sy,stx,sty;
+let pinching=false,lastDist=0,pinchMid={x:0,y:0};
+const ml=document.getElementById('ml'),sl=document.getElementById('sl');
+
+function r2d(d){return d*Math.PI/180;}
+function gp(cx,cy,deg,dist){return{x:cx+Math.cos(r2d(deg))*dist,y:cy+Math.sin(r2d(deg))*dist};}
+function mk(tag,cls){const e=document.createElement(tag);e.className=cls;return e;}
+function ln(x1,y1,x2,y2,stroke,sw,op,dash){
+  const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+  l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
+  l.setAttribute('stroke',stroke);l.setAttribute('stroke-width',sw);l.setAttribute('stroke-opacity',op);
+  if(dash)l.setAttribute('stroke-dasharray',dash);
+  sl.appendChild(l);return l;
+}
+
+function getScale(){
+  const w=window.innerWidth,h=window.innerHeight,s=Math.min(w,h),mob=w<600;
+  return{cat:mob?s*.26:Math.min(s*.25,240),sub:mob?s*.46:Math.min(s*.46,460)};
+}
+
+// Beräknar optimala subnodvinklar kring en kategoripunkt
+// Subnoderna sprids symmetriskt inom en öppen kil som pekar utåt från centrum
+function subAngles(catAngle,n){
+  if(n===0)return[];
+  if(n===1)return[catAngle];
+  // Öppen kil: max 100° total spread, centrerat på catAngle
+  // Subnoderna pekar bort från centrum så vi lägger dem på samma sida
+  const maxSpread=Math.min(100,n*22);
+  const step=maxSpread/(n-1);
+  const start=catAngle-maxSpread/2;
+  return Array.from({length:n},(_,i)=>start+i*step);
+}
+
+function build(){
+  CX=window.innerWidth/2; CY=window.innerHeight/2;
+  ml.innerHTML=''; sl.innerHTML='';
+  sl.setAttribute('viewBox',`0 0 ${window.innerWidth} ${window.innerHeight}`);
+  applyT();
+  const wk=WEEKS[activeWeekIdx];
+  const {cat:catD,sub:subD}=getScale();
+
+  // Centrum
+  const c=mk('div','cn');
+  c.style.cssText=`left:${CX}px;top:${CY}px`;
+  c.innerHTML=`<div class="ring"></div><div class="ring"></div><div class="ring"></div>
+    <div class="ct">Svensk<br>OSINT</div>
+    <div class="cs">V.${wk.w} · ${wk.date.split(' ')[0].toUpperCase()} ${wk.year}</div>`;
+  ml.appendChild(c);
+
+  wk.cats.forEach(cat=>{
+    const cp=gp(CX,CY,cat.a,catD);
+    ln(CX,CY,cp.x,cp.y,cat.color,1.5,.3,'');
+    const cn=mk('div',`catn ${cat.cs}`);
+    cn.style.cssText=`left:${cp.x}px;top:${cp.y}px`;
+    cn.dataset.cid=cat.id;
+    cn.innerHTML=`<span class="cdot" style="background:${cat.color}"></span>${cat.l}`;
+    cn.addEventListener('click',e=>{e.stopPropagation();actCat(cat,cn);});
+    ml.appendChild(cn);
+
+    const angles=subAngles(cat.a,cat.subs.length);
+    cat.subs.forEach((sub,i)=>{
+      const sp=gp(CX,CY,angles[i],subD);
+      ln(cp.x,cp.y,sp.x,sp.y,cat.color,1,.15,'4,5');
+      const sn=mk('div',`subn ss${cat.id[0].toUpperCase()+cat.id.slice(1)}`);
+      sn.style.cssText=`left:${sp.x}px;top:${sp.y}px;position:absolute`;
+      sn.dataset.sid=sub.id;sn.dataset.cid=cat.id;
+      sn.textContent=sub.l;
+      const b=mk('span','sbadge');
+      b.textContent=sub.arts.length;b.style.background=cat.color;
+      sn.appendChild(b);
+      sn.addEventListener('click',e=>{e.stopPropagation();openP(cat,sub);});
+      ml.appendChild(sn);
+    });
+  });
+
+  document.getElementById('topbar-week').textContent=`VECKOBREV · V.${wk.w} · ${wk.date.toUpperCase()}`;
+}
+
+function openP(cat,sub){
+  document.getElementById('pr').textContent=cat.l.toUpperCase();
+  document.getElementById('pr').style.color=cat.color;
+  document.getElementById('pt').textContent=sub.l;
+  document.getElementById('pc').textContent=`${sub.arts.length} INLÄGG / ARTIKLAR`;
+  const list=document.getElementById('pl');list.innerHTML='';
+  sub.arts.forEach(art=>{
+    const a=document.createElement('a');
+    a.className='ai';a.href=art.u;a.target='_blank';a.rel='noopener noreferrer';
+    a.innerHTML=`<div class="ait">${art.t}</div><div class="aim"><span style="color:${cat.color};font-size:7px">●</span>${cat.l}<span style="opacity:.4">↗</span></div>`;
+    list.appendChild(a);
+  });
+  document.querySelectorAll('.subn').forEach(n=>n.classList.remove('act'));
+  document.querySelector(`[data-sid="${sub.id}"]`)?.classList.add('act');
+  document.getElementById('panel').classList.add('open');
+}
+function closeP(){
+  document.getElementById('panel').classList.remove('open');
+  document.querySelectorAll('.subn').forEach(n=>n.classList.remove('act'));
+}
+function fcat(id){
+  const wk=WEEKS[activeWeekIdx];
+  document.querySelectorAll('.catn').forEach(n=>n.style.opacity=(!id||n.dataset.cid===id)?'1':'.15');
+  document.querySelectorAll('.subn').forEach(n=>n.style.opacity=(!id||n.dataset.cid===id)?'1':'.08');
+  sl.querySelectorAll('line').forEach(l=>{
+    l.style.opacity=id?(l.getAttribute('stroke')===(wk.cats.find(c=>c.id===id)?.color)?'1':'.08'):'1';
+  });
+  if(!id)document.querySelectorAll('.catn').forEach(n=>n.classList.remove('act'));
+}
+function actCat(cat,node){
+  document.querySelectorAll('.catn').forEach(n=>n.classList.remove('act'));
+  node.classList.add('act');fcat(cat.id);
+}
+function applyT(){
+  const t=`translate(${T.x}px,${T.y}px) scale(${T.s})`;
+  ml.style.transform=sl.style.transform=t;
+  ml.style.transformOrigin=sl.style.transformOrigin='0 0';
+}
+
+// Veckoväljare
+function buildWkSelector(){
+  const list=document.getElementById('wk-list');list.innerHTML='';
+  const years=[...new Set(WEEKS.map(w=>w.year))];
+  years.forEach(yr=>{
+    const lbl=document.createElement('div');lbl.className='wk-year-label';lbl.textContent=yr;list.appendChild(lbl);
+    WEEKS.forEach((wk,idx)=>{
+      if(wk.year!==yr)return;
+      const item=document.createElement('div');
+      item.className='wk-item'+(idx===activeWeekIdx?' active':'');
+      const dots=['sv','no','eu','ov'].map(id=>{
+        const has=wk.cats.some(c=>c.id===id&&c.subs.some(s=>s.arts.length>0));
+        const col={'sv':'#4a9eff','no':'#3de8b0','eu':'#f5a041','ov':'#f04e7c'}[id];
+        return`<span class="wk-dot${has?' has':''}" style="background:${col}"></span>`;
+      }).join('');
+      item.innerHTML=`<span class="wk-num">V.${wk.w}</span><span class="wk-date">${wk.date}</span><span class="wk-dots">${dots}</span>`;
+      item.addEventListener('click',()=>switchWeek(idx));
+      list.appendChild(item);
+    });
+  });
+}
+function switchWeek(idx){
+  activeWeekIdx=idx;
+  document.getElementById('wk-selector').classList.remove('open');
+  document.getElementById('wk-current').textContent=`V.${WEEKS[idx].w}`;
+  fcat(null);closeP();T={x:0,y:0,s:1};build();buildWkSelector();
+}
+function toggleWkSelector(){document.getElementById('wk-selector').classList.toggle('open');}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#wk-selector'))document.getElementById('wk-selector').classList.remove('open');
+});
+
+// Mus
+const cw=document.getElementById('cw');
+cw.addEventListener('mousedown',e=>{
+  if(e.target.closest('#panel,#legend,#zc,#hud,#topbar,#wk-selector'))return;
+  dragging=true;sx=e.clientX;sy=e.clientY;stx=T.x;sty=T.y;document.body.classList.add('drag');
+});
+document.addEventListener('mousemove',e=>{if(!dragging)return;T.x=stx+e.clientX-sx;T.y=sty+e.clientY-sy;applyT();});
+document.addEventListener('mouseup',()=>{dragging=false;document.body.classList.remove('drag');});
+document.addEventListener('wheel',e=>{
+  if(e.target.closest('#panel'))return;e.preventDefault();
+  const f=e.deltaY>0?.9:1.1,ns=Math.min(Math.max(T.s*f,.15),5);
+  const wx=(e.clientX-T.x)/T.s,wy=(e.clientY-T.y)/T.s;
+  T.s=ns;T.x=e.clientX-wx*ns;T.y=e.clientY-wy*ns;applyT();
+},{passive:false});
+
+// Touch
+cw.addEventListener('touchstart',e=>{
+  if(e.target.closest('#panel,#legend,#zc,#hud,#topbar,#wk-selector'))return;
+  if(e.touches.length===1){dragging=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY;stx=T.x;sty=T.y;}
+  else if(e.touches.length===2){dragging=false;pinching=true;
+    const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;
+    lastDist=Math.hypot(dx,dy);
+    pinchMid={x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2};}
+},{passive:true});
+cw.addEventListener('touchmove',e=>{
+  if(e.target.closest('#panel'))return;e.preventDefault();
+  if(pinching&&e.touches.length===2){
+    const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;
+    const dist=Math.hypot(dx,dy),f=dist/lastDist,ns=Math.min(Math.max(T.s*f,.15),5);
+    const wx=(pinchMid.x-T.x)/T.s,wy=(pinchMid.y-T.y)/T.s;
+    T.s=ns;T.x=pinchMid.x-wx*ns;T.y=pinchMid.y-wy*ns;lastDist=dist;applyT();
+  }else if(dragging&&e.touches.length===1){T.x=stx+e.touches[0].clientX-sx;T.y=sty+e.touches[0].clientY-sy;applyT();}
+},{passive:false});
+cw.addEventListener('touchend',e=>{
+  if(e.touches.length===0){dragging=false;pinching=false;}
+  if(e.touches.length===1){pinching=false;dragging=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY;stx=T.x;sty=T.y;}
+},{passive:true});
+
+function zm(f){
+  const cx=window.innerWidth/2,cy=window.innerHeight/2,ns=Math.min(Math.max(T.s*f,.15),5);
+  const wx=(cx-T.x)/T.s,wy=(cy-T.y)/T.s;T.s=ns;T.x=cx-wx*ns;T.y=cy-wy*ns;applyT();
+}
+function rv(){T={x:0,y:0,s:1};applyT();}
+cw.addEventListener('click',e=>{if(['cw','ml','sl'].includes(e.target.id)){closeP();fcat(null);}});
+window.addEventListener('load',()=>{
+  document.getElementById('wk-current').textContent=`V.${WEEKS[activeWeekIdx].w}`;
+  build();buildWkSelector();
+});
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(build,120);});
+</script>
+</body>
+</html>
